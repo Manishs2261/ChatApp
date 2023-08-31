@@ -1,6 +1,9 @@
+import 'package:chatapp/src/view/auth/login/login.dart';
 import 'package:chatapp/src/view/home/homepage.dart';
 import 'package:flutter/material.dart';
 
+//globel object for accessing device scren size
+late Size  mq;
 void main() {
   runApp(const MyApp());
 }
@@ -22,7 +25,8 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
         useMaterial3: true,
       ),
-      home: HomePage(),
+      home: LoginScreen()
+      //HomePage(),
     );
   }
 }
