@@ -1,4 +1,6 @@
+import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:flutter/material.dart';
+import 'package:get/get.dart';
 
 import '../../../../main.dart';
 
@@ -24,8 +26,10 @@ class _LoginScreenState extends State<LoginScreen> {
               child: Image(image: AssetImage( 'images/chaticon.png')),
             ),
             SizedBox(height: mq.height * .1,),
-           ElevatedButton.icon(onPressed: (){},
-             style: ElevatedButton.styleFrom(elevation: 4),
+           ElevatedButton.icon(onPressed: (){
+             Get.toNamed(RoutesName.homepage);
+           },
+             style: ElevatedButton.styleFrom(elevation: 4,),
              icon: Image.asset('images/google.png',width:50,height: 25,),
            label: Text("Signin with Google",style: TextStyle(color: Colors.blueGrey,fontSize: 16),),)
           ],
