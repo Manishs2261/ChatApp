@@ -16,9 +16,15 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   //for splash screen opne full screen
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
-  //for initializ a firebase
-  _initializerFirebase();
-  runApp(const MyApp());
+  // for setting orientation to portrait only
+  SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]).then((value) {
+
+
+    //for initializ a firebase
+    _initializerFirebase();
+    runApp(const MyApp());
+  });
+
 }
 
 class MyApp extends StatelessWidget {

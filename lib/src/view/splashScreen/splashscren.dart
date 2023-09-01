@@ -1,5 +1,7 @@
-import 'package:chatapp/src/res/view_model/services/spleshSrvices/splash.dart';
+
 import 'package:flutter/material.dart';
+
+import '../../view_model/services/spleshSrvices/splash.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({super.key});
