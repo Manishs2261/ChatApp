@@ -14,7 +14,10 @@ class SplashServices {
   void isLogin() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
     SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.transparent));
-    Timer(Duration(seconds: 3), () => Get.toNamed(RoutesName.loginScreen));
+    Timer(Duration(seconds: 3), () => Get.offNamed(RoutesName.loginScreen));
+
+
+    // wait fo rvideo number 13
   }
 
 }
