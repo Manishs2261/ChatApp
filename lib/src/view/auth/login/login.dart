@@ -24,12 +24,21 @@ class _LoginScreenState extends State<LoginScreen> {
   //for use goodle sign in
   _handleGoogleBtnClick(){
     Utils.showProgressBar(context);
-    _signInWithGoogle().then((user){
+    _signInWithGoogle().then((user) async {
       Navigator.pop(context);
   if(user!= null){
     log('\nUser${user.user}');
     log('\nUser adisionalinfo${user.additionalUserInfo}');
-    Get.offNamed(RoutesName.homepage);
+
+    if((await Apis.userExists() ))
+      {
+        Get.offNamed(RoutesName.homepage);
+      }else
+        {
+          await Apis.createUser().then((value){
+            Get.offNamed(RoutesName.homepage);
+          });
+        }
   }
 
     });
