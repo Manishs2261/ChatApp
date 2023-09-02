@@ -7,6 +7,7 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
+import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -40,7 +41,9 @@ class _HomePageState extends State<HomePage> {
         leading: Icon(CupertinoIcons.home),
         actions: [
           IconButton(onPressed: (){}, icon: Icon(Icons.search)),
-          IconButton(onPressed: (){}, icon: Icon(Icons.more_vert)),
+          IconButton(onPressed: (){
+            Get.toNamed(RoutesName.profileScreen,arguments: list);
+          }, icon: Icon(Icons.more_vert)),
         ],
       ),
 
