@@ -1,5 +1,11 @@
 
 
+
+
+import 'dart:developer';
+
+
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
@@ -72,6 +78,7 @@ class _HomePageState extends State<HomePage> {
                     padding: EdgeInsets.only(top: mq.height * .01),
                     physics: BouncingScrollPhysics(),
                     itemBuilder: (context,index){
+                      print("mansih ${list[index].image}");
 
                       return Card(
                         color: Colors.blue,
@@ -80,10 +87,32 @@ class _HomePageState extends State<HomePage> {
                         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                         child: ListTile(
 
-                          leading: CircleAvatar(child: Icon(CupertinoIcons.person),),
+                        // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
+                          leading: ClipRRect(
+                            borderRadius: BorderRadius.circular(mq.height * .3),
+                            child: CachedNetworkImage(
+                              width: mq.height * .055,
+                              height: mq.height * .055,
+
+                              imageUrl:'${list[index].image}',
+                             // placeholder: (context, url) => CircularProgressIndicator(),
+                              errorWidget: (context, url, error) =>
+                              CircleAvatar(child: Icon(CupertinoIcons.person),),
+                            ),
+                          ),
+
+
                           title: Text("${list[index].name}"),
                           subtitle: Text("${list[index].about}",maxLines: 1,),
-                          trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
+                         // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
+                          trailing: Container(
+                            width: 15,
+                            height: 15,
+                            decoration: BoxDecoration(
+                              color: Colors.greenAccent.shade400,
+                              borderRadius: BorderRadius.circular(10)
+                            ),
+                          ),
                         ),
                       );
 
