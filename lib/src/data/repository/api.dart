@@ -73,6 +73,15 @@ static late ChatModel me;
   }
 
 
+  // for updating user form firestore database
+  static Future<void> updateUseInfo() async{
+    await firestore.collection('users').doc(user.uid).update({
+      'name':me.name,
+      'about':me.about,
+    });
+  }
+
+
 
 
 
