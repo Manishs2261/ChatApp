@@ -27,8 +27,12 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
 
-  List<ChatModel>list =[];
-
+    // for store=ing all users
+  List<ChatModel>_list =[];
+  // for storing searched item
+  final List<ChatModel>_isSerchList = [];
+  // for storing search status
+  bool _isSearching = false;
 
 
   @override
@@ -40,103 +44,174 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
+    print("new build");
+    return GestureDetector(
+      // for hiding keyboard when a tap is deected on screen
+      onTap: ()=> FocusScope.of(context).unfocus(),
+      child: WillPopScope(
+        // if search is on & back button is pressed then close search
+        // or else simple close current scren on back button click
+        onWillPop: (){
+          if(_isSearching){
+            setState(() {
+              _isSearching = false;
+            });
+            return Future.value(false);
+          }else{
+            return Future.value(true);
+          }
+        },
+        child: Scaffold(
 
-      appBar: AppBar(
-        title: Text("Chat App"),
 
-        leading: Icon(CupertinoIcons.home),
-        actions: [
-          IconButton(onPressed: (){}, icon: Icon(Icons.search)),
-          IconButton(onPressed: (){
-            Get.toNamed(RoutesName.profileScreen,arguments: Apis.me);
-          }, icon: Icon(Icons.more_vert)),
-        ],
-      ),
+          appBar: AppBar(
+            title: _isSearching
+                ? TextField(
+              decoration: InputDecoration(
+                border: InputBorder.none,
+                hintText: "Name, Email,.."
+              ),
+              autocorrect: true,
+              autofocus: true,
+              style: TextStyle(fontSize: 17,letterSpacing: 0.5),
+              // when search text change then update search list
+              onChanged: (value){
+                //search logic
+                _isSerchList.clear();
+                for(var i in _list){
+                  if(i.name!.toLowerCase().contains(value.toLowerCase()) ||
+                      i.email!.toLowerCase().contains(value.toLowerCase())){
 
-      floatingActionButton: Padding(
-        padding: const EdgeInsets.only(bottom: 20),
-        child: FloatingActionButton(
-          onPressed: () {
+                    _isSerchList.add(i);
+                  }else
+                    {
+                      setState(() {
+                        _isSerchList;
+                      });
+                    }
+                }
+              },
+            )
+                :Text("Chat App") ,
+            leading: Icon(CupertinoIcons.home),
+            actions: [
+
+              // for user search buttton
+              IconButton(onPressed: (){
+                 setState(() {
+                   _isSearching = !_isSearching;
+                 });
+              }, icon: Icon(_isSearching
+                  ? CupertinoIcons.clear_circled_solid
+                  : Icons.search)),
+              //  more feartures button
+              IconButton(onPressed: (){
+                Get.toNamed(RoutesName.profileScreen,arguments: Apis.me);
+              }, icon: Icon(Icons.more_vert)),
+            ],
+          ),
+
+          floatingActionButton: Padding(
+            padding: const EdgeInsets.only(bottom: 20),
+            child: FloatingActionButton(
+              onPressed: () {
 
 
-          },
-          child: Icon(Icons.add),
+              },
+              child: Icon(Icons.add),
+            ),
+          ),
+
+          body: StreamBuilder(
+            stream:  Apis.getAllUsers(),
+            builder: (context, snapshot) {
+
+              switch(snapshot.connectionState){
+                // if dats is loading
+                case ConnectionState.waiting:
+                case ConnectionState.none:
+                  return Center(child: CircularProgressIndicator(),);
+                  // if some or all data is  loaded then show
+                case ConnectionState.active:
+                case ConnectionState.done:
+
+                final data  = snapshot.data?.docs;
+                _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
+
+                if(_list.isNotEmpty)
+                  {
+                    return ListView.builder(
+                        itemCount:_isSearching ? _isSerchList.length: _list.length,
+                        padding: EdgeInsets.only(top: mq.height * .01),
+                        physics: BouncingScrollPhysics(),
+                        itemBuilder: (context,index){
+                         // print("mansih ${list[index].image}");
+
+                          return CahtUserCard(chat:_isSearching ? _isSerchList[index] : _list[index]);
+
+                        });
+                  }else
+                    {
+                      return Center(child: Text("No connection Found!",style: TextStyle(fontSize: 20),),);
+                    }
+
+              }
+
+
+
+            },
+          ),
         ),
       ),
+    );
+  }
+}
 
-      body: StreamBuilder(
-        stream:  Apis.getAllUsers(),
-        builder: (context, snapshot) {
+class CahtUserCard extends StatelessWidget {
 
-          switch(snapshot.connectionState){
-            // if dats is loading
-            case ConnectionState.waiting:
-            case ConnectionState.none:
-              return Center(child: CircularProgressIndicator(),);
-              // if some or all data is  loaded then show
-            case ConnectionState.active:
-            case ConnectionState.done:
+   final ChatModel chat;
 
-            final data  = snapshot.data?.docs;
-            list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
-
-            if(list.isNotEmpty)
-              {
-                return ListView.builder(
-                    itemCount: list.length,
-                    padding: EdgeInsets.only(top: mq.height * .01),
-                    physics: BouncingScrollPhysics(),
-                    itemBuilder: (context,index){
-                     // print("mansih ${list[index].image}");
-
-                      return Card(
-                        color: Colors.blue,
-                        elevation: 5,
-                        margin: EdgeInsets.symmetric(horizontal: mq.width * .01,vertical: 3),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                        child: ListTile(
-
-                        // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
-                          leading: ClipRRect(
-                            borderRadius: BorderRadius.circular(mq.height * .3),
-                            child: CachedNetworkImage(
-                              width: mq.height * .055,
-                              height: mq.height * .055,
-
-                              imageUrl:'${list[index].image}',
-                             // placeholder: (context, url) => CircularProgressIndicator(),
-                              errorWidget: (context, url, error) =>
-                              CircleAvatar(child: Icon(CupertinoIcons.person),),
-                            ),
-                          ),
+  const CahtUserCard({
+    super.key,
+    required this.chat,
+  });
 
 
-                          title: Text("${list[index].name}"),
-                          subtitle: Text("${list[index].about}",maxLines: 1,),
-                         // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
-                          trailing: Container(
-                            width: 15,
-                            height: 15,
-                            decoration: BoxDecoration(
-                              color: Colors.greenAccent.shade400,
-                              borderRadius: BorderRadius.circular(10)
-                            ),
-                          ),
-                        ),
-                      );
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      color: Colors.blue,
+      elevation: 5,
+      margin: EdgeInsets.symmetric(horizontal: mq.width * .01,vertical: 3),
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+      child: ListTile(
 
-                    });
-              }else
-                {
-                  return Center(child: Text("No connection Found!",style: TextStyle(fontSize: 20),),);
-                }
+      // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(mq.height * .3),
+          child: CachedNetworkImage(
+            width: mq.height * .055,
+            height: mq.height * .055,
 
-          }
+            imageUrl:'${chat.image}',
+           // placeholder: (context, url) => CircularProgressIndicator(),
+            errorWidget: (context, url, error) =>
+            CircleAvatar(child: Icon(CupertinoIcons.person),),
+          ),
+        ),
 
 
-
-        },
+        title: Text("${chat.name}"),
+        subtitle: Text("${chat.about}",maxLines: 1,),
+       // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
+        trailing: Container(
+          width: 15,
+          height: 15,
+          decoration: BoxDecoration(
+            color: Colors.greenAccent.shade400,
+            borderRadius: BorderRadius.circular(10)
+          ),
+        ),
       ),
     );
   }

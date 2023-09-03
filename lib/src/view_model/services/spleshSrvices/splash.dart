@@ -13,7 +13,8 @@ class SplashServices {
 
   void isLogin() {
     SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
-    SystemChrome.setSystemUIOverlayStyle(SystemUiOverlayStyle(statusBarColor: Colors.transparent));
+    SystemChrome.setSystemUIOverlayStyle(
+        SystemUiOverlayStyle(systemNavigationBarColor: Colors.white));
     Timer(Duration(seconds: 3), () => Get.offNamed(RoutesName.loginScreen));
 
 

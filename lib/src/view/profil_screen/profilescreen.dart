@@ -74,7 +74,51 @@ class _ProfileScreenState extends State<ProfileScreen> {
                         bottom: 0,
                         right: 0,
                         child: MaterialButton(
-                          onPressed: (){},
+                          onPressed: (){
+
+                            //bottom sheet for picking a profile picture for user
+                            showModalBottomSheet(
+                                context: context,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.only(
+                                    topLeft: Radius.circular(20),
+                                    topRight: Radius.circular(20)
+                                  ),
+                                ),
+                                builder: (_) {
+                                  return ListView(
+                                    shrinkWrap: true,
+                                    padding: EdgeInsets.only(
+                                      top: mq.height * .03,
+                                      bottom: mq.height * .08
+                                    ),
+                                    children: [
+
+                                      Text( "Pick Profile Picture",
+                                      textAlign: TextAlign.center,
+                                      style: TextStyle(fontSize: 20,
+                                      fontWeight: FontWeight.w500),),
+                                     SizedBox(height: 10,),
+                                      Row(
+                                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                                        children: [
+                                          // pick from gallery button
+                                          ElevatedButton(
+                                              onPressed: (){},
+                                              child: Icon(Icons.add_photo_alternate,size: 80,)),
+
+                                          // take picture from camera button
+                                          ElevatedButton(
+                                              onPressed: (){},
+                                              child: Icon(Icons.camera_alt,size: 80,))
+                                        ],
+                                      )
+
+
+                                    ],
+                                  );
+                                });
+                          },
                           child: Icon(Icons.edit,color: Colors.blue,),
                           color: Colors.white,
                           shape: CircleBorder(),
