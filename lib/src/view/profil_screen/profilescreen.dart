@@ -1,6 +1,7 @@
 
 
 import 'dart:developer';
+import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
@@ -10,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../main.dart';
 
@@ -25,6 +27,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
  var list = Get.arguments;
  final _formkey = GlobalKey<FormState>();
+ String? _image;
 
 
   @override
@@ -56,6 +59,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(width: mq.width, height: mq.height * .05,),
                   Stack(
                     children: [
+                      _image != null
+                      ?
+                          //local image
+                      ClipRRect(
+                        borderRadius: BorderRadius.circular(mq.height * .1),
+                        child: Image.file(File(_image!),
+                          width: mq.height * .2,
+                          height: mq.height * .2,
+                          fit: BoxFit.cover,
+                        ),
+                      )
+                          :
+                          // image from server
                       ClipRRect(
                         borderRadius: BorderRadius.circular(mq.height * .1),
                         child: CachedNetworkImage(
@@ -63,8 +79,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
                           height: mq.height * .2,
 
                           imageUrl:'${list.image}',
-                          fit: BoxFit.fill,
-                          // placeholder: (context, url) => CircularProgressIndicator(),
+                          fit: BoxFit.cover,
+
                           errorWidget: (context, url, error) =>
                               CircleAvatar(child: Icon(CupertinoIcons.person),),
                         ),
@@ -104,12 +120,42 @@ class _ProfileScreenState extends State<ProfileScreen> {
                                         children: [
                                           // pick from gallery button
                                           ElevatedButton(
-                                              onPressed: (){},
+                                              onPressed: () async {
+                                                final ImagePicker picker = ImagePicker();
+                                                log("imahe");
+                                                // Pick an image.
+                                                final XFile? image = await picker.pickImage(source: ImageSource.gallery,imageQuality: 70);
+                                                 if(image != null){
+                                                   log('Image path :${image.path} -- - MImeType :${image.mimeType}');
+                                                   setState(() {
+                                                     _image = image.path;
+                                                   });
+
+                                                   Apis.updateProfilePicture(File(_image!));
+                                                   Navigator.pop(context);
+                                                 }
+                                                 // for hiding bottom sheet
+
+
+                                              },
                                               child: Icon(Icons.add_photo_alternate,size: 80,)),
 
                                           // take picture from camera button
                                           ElevatedButton(
-                                              onPressed: (){},
+                                              onPressed: () async {
+                                                final ImagePicker picker = ImagePicker();
+                                                log("imahe");
+                                                // Pick an image.
+                                                final XFile? image = await picker.pickImage(source: ImageSource.camera);
+                                                if(image != null){
+                                                  log('Image path :${image.path} -- - MImeType :${image.mimeType}');
+                                                  setState(() {
+                                                    _image = image.path;
+                                                  });
+                                                  Apis.updateProfilePicture(File(_image!));
+                                                  Navigator.pop(context);
+                                                }
+                                              },
                                               child: Icon(Icons.camera_alt,size: 80,))
                                         ],
                                       )

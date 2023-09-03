@@ -45,5 +45,11 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+    <!-- premission for picking image from gallery  or taking image from camera-->
+	<key>NSPhotoLibraryUsageDescription</key>
+	<String>App requires access to the photoo library for picking pictures.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>App required access to the camera for taking pictures</string>
 </dict>
 </plist>

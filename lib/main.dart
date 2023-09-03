@@ -16,6 +16,7 @@ void main() {
   WidgetsFlutterBinding.ensureInitialized();
   //for splash screen opne full screen
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersiveSticky);
+
   // for setting orientation to portrait only
   SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp,DeviceOrientation.portraitDown]).then((value) {
 

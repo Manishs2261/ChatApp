@@ -116,7 +116,6 @@ class _HomePageState extends State<HomePage> {
             child: FloatingActionButton(
               onPressed: () {
 
-
               },
               child: Icon(Icons.add),
             ),
@@ -184,32 +183,37 @@ class CahtUserCard extends StatelessWidget {
       elevation: 5,
       margin: EdgeInsets.symmetric(horizontal: mq.width * .01,vertical: 3),
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-      child: ListTile(
+      child: InkWell(
+        onTap: (){
+          Get.toNamed(RoutesName.chatScreen,arguments: chat);
+        },
+        child: ListTile(
 
-      // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
-        leading: ClipRRect(
-          borderRadius: BorderRadius.circular(mq.height * .3),
-          child: CachedNetworkImage(
-            width: mq.height * .055,
-            height: mq.height * .055,
+        // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
+          leading: ClipRRect(
+            borderRadius: BorderRadius.circular(mq.height * .3),
+            child: CachedNetworkImage(
+              width: mq.height * .055,
+              height: mq.height * .055,
 
-            imageUrl:'${chat.image}',
-           // placeholder: (context, url) => CircularProgressIndicator(),
-            errorWidget: (context, url, error) =>
-            CircleAvatar(child: Icon(CupertinoIcons.person),),
+              imageUrl:'${chat.image}',
+             // placeholder: (context, url) => CircularProgressIndicator(),
+              errorWidget: (context, url, error) =>
+              CircleAvatar(child: Icon(CupertinoIcons.person),),
+            ),
           ),
-        ),
 
 
-        title: Text("${chat.name}"),
-        subtitle: Text("${chat.about}",maxLines: 1,),
-       // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
-        trailing: Container(
-          width: 15,
-          height: 15,
-          decoration: BoxDecoration(
-            color: Colors.greenAccent.shade400,
-            borderRadius: BorderRadius.circular(10)
+          title: Text("${chat.name}"),
+          subtitle: Text("${chat.about}",maxLines: 1,),
+         // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
+          trailing: Container(
+            width: 15,
+            height: 15,
+            decoration: BoxDecoration(
+              color: Colors.greenAccent.shade400,
+              borderRadius: BorderRadius.circular(10)
+            ),
           ),
         ),
       ),
