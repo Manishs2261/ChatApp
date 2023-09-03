@@ -1,7 +1,18 @@
+
+
+
+import 'dart:developer';
+
 import 'package:chatapp/src/model/chat_model/chatmodel.dart';
+import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:get/get.dart';
+import 'package:get/get_core/src/get_main.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+
+import '../../utils/utils/utils.dart';
 
 class Apis{
 
@@ -38,9 +49,42 @@ class Apis{
     return await firestore.collection('users').doc(user.uid).set(chatmodel.toJson());
   }
 
+  // for getting all user from firestore database
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllUsers(){
+    return firestore.collection('users').where('id',isNotEqualTo: user.uid).snapshots();
+  }
+
+static late ChatModel me;
+
+  //for store self information
+  static Future<void> getSelfINfo() async{
+     await firestore.collection('users').doc(user.uid).get().then((value) async {
+
+       if(value.exists){
+         me = ChatModel.fromJson(value.data()!);
+         log('my data :${value.data()}');
+
+       }else{
+         await createUser().then((value){
+           getSelfINfo();
+         });
+       }
+     });
+  }
+
+
+
+
+
   // for sign out
-  static signOut()async{
-    await  FirebaseAuth.instance.signOut();
-    await GoogleSignIn().signOut();
+  static signOut(BuildContext context)async{
+    //sign out from app
+    await  FirebaseAuth.instance.signOut().then((value) async {
+      await GoogleSignIn().signOut().then((value){
+        // for hiding progress dialog
+        Get.toNamed(RoutesName.loginScreen);
+      });
+    });
+
   }
 }

@@ -3,6 +3,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
 import 'package:chatapp/src/model/chat_model/chatmodel.dart';
+import 'package:chatapp/src/utils/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -32,8 +33,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
       floatingActionButton: Padding(
         padding: const EdgeInsets.only(bottom: 15),
         child: FloatingActionButton.extended(
-            onPressed: (){
-              Apis.signOut();
+            onPressed: () async {
+              await Apis.signOut(context);
+
             },
             icon: Icon(Icons.logout),
             label: Text("Logout")),
@@ -43,25 +45,40 @@ class _ProfileScreenState extends State<ProfileScreen> {
         child: Column(
           children: [
             SizedBox(width: mq.width, height: mq.height * .05,),
-            ClipRRect(
-              borderRadius: BorderRadius.circular(mq.height * .1),
-              child: CachedNetworkImage(
-                width: mq.height * .2,
-                height: mq.height * .2,
+            Stack(
+              children: [
+                ClipRRect(
+                  borderRadius: BorderRadius.circular(mq.height * .1),
+                  child: CachedNetworkImage(
+                    width: mq.height * .2,
+                    height: mq.height * .2,
 
-                imageUrl:'${list[0].image}',
-                fit: BoxFit.fill,
-                // placeholder: (context, url) => CircularProgressIndicator(),
-                errorWidget: (context, url, error) =>
-                    CircleAvatar(child: Icon(CupertinoIcons.person),),
-              ),
+                    imageUrl:'${list.image}',
+                    fit: BoxFit.fill,
+                    // placeholder: (context, url) => CircularProgressIndicator(),
+                    errorWidget: (context, url, error) =>
+                        CircleAvatar(child: Icon(CupertinoIcons.person),),
+                  ),
+                ),
+                
+                Positioned(
+                  bottom: 0,
+                  right: 0,
+                  child: MaterialButton(
+                    onPressed: (){},
+                    child: Icon(Icons.edit,color: Colors.blue,),
+                    color: Colors.white,
+                    shape: CircleBorder(),
+                  ),
+                )
+              ],
             ),
 
             SizedBox(height: mq.height * .03,),
-            Text('${list[0].email}',style:TextStyle(color: Colors.black54,fontSize: 16),),
+            Text('${list.email}',style:TextStyle(color: Colors.black54,fontSize: 16),),
             SizedBox(height: mq.height * .03,),
             TextFormField(
-              initialValue: list[0].name,
+              initialValue: list.name,
               decoration: InputDecoration(
                 prefixIcon: Icon(Icons.person),
                 border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -71,7 +88,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             ),
             SizedBox(height: mq.height * .02),
             TextFormField(
-              initialValue: list[0].about,
+              initialValue: list.about,
               decoration: InputDecoration(
                   prefixIcon: Icon(Icons.person),
                   border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),

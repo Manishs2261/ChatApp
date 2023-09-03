@@ -32,6 +32,13 @@ class _HomePageState extends State<HomePage> {
   List<ChatModel>list =[];
 
   @override
+  void initState() {
+    // TODO: implement initState
+    super.initState();
+    Apis.getSelfINfo();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
 
@@ -42,7 +49,7 @@ class _HomePageState extends State<HomePage> {
         actions: [
           IconButton(onPressed: (){}, icon: Icon(Icons.search)),
           IconButton(onPressed: (){
-            Get.toNamed(RoutesName.profileScreen,arguments: list);
+            Get.toNamed(RoutesName.profileScreen,arguments: Apis.me);
           }, icon: Icon(Icons.more_vert)),
         ],
       ),
@@ -51,7 +58,7 @@ class _HomePageState extends State<HomePage> {
         padding: const EdgeInsets.only(bottom: 20),
         child: FloatingActionButton(
           onPressed: () {
-          Apis.signOut();
+
 
           },
           child: Icon(Icons.add),
@@ -59,7 +66,7 @@ class _HomePageState extends State<HomePage> {
       ),
 
       body: StreamBuilder(
-        stream: Apis.firestore.collection('users').snapshots(),
+        stream:  Apis.getAllUsers(),
         builder: (context, snapshot) {
 
           switch(snapshot.connectionState){
@@ -81,7 +88,7 @@ class _HomePageState extends State<HomePage> {
                     padding: EdgeInsets.only(top: mq.height * .01),
                     physics: BouncingScrollPhysics(),
                     itemBuilder: (context,index){
-                      print("mansih ${list[index].image}");
+                     // print("mansih ${list[index].image}");
 
                       return Card(
                         color: Colors.blue,
