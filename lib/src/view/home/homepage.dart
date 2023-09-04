@@ -16,7 +16,8 @@ import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
 import '../../../main.dart';
-import '../../model/chat_model/chatmodel.dart';
+import '../../model/user_model/usermodel.dart';
+
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -28,9 +29,9 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
 
     // for store=ing all users
-  List<ChatModel>_list =[];
+  List<UserModel>_list =[];
   // for storing searched item
-  final List<ChatModel>_isSerchList = [];
+  final List<UserModel>_isSerchList = [];
   // for storing search status
   bool _isSearching = false;
 
@@ -135,7 +136,7 @@ class _HomePageState extends State<HomePage> {
                 case ConnectionState.done:
 
                 final data  = snapshot.data?.docs;
-                _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
+                _list = data?.map((e) => UserModel.fromJson(e.data())).toList() ?? [];
 
                 if(_list.isNotEmpty)
                   {
@@ -168,7 +169,7 @@ class _HomePageState extends State<HomePage> {
 
 class CahtUserCard extends StatelessWidget {
 
-   final ChatModel chat;
+   final UserModel chat;
 
   const CahtUserCard({
     super.key,

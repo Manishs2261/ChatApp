@@ -1,10 +1,15 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:chatapp/src/data/repository/api.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 
 import '../../../main.dart';
+import '../../model/chat_model/chatmodel.dart';
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -15,7 +20,11 @@ class ChatScreen extends StatefulWidget {
 
 class _ChatScreenState extends State<ChatScreen> {
 
+  // for get data form Home screen 
   var user =Get.arguments;
+  
+  // for storing all messages
+  List<ChatModel>_list = [];
   @override
   Widget build(BuildContext context) {
 
@@ -25,28 +34,46 @@ class _ChatScreenState extends State<ChatScreen> {
         appBar: AppBar(
           automaticallyImplyLeading: false,
           flexibleSpace: _appBar() ,
+
         ),
+        backgroundColor:  Color.fromARGB(255, 234, 248, 255),
         body:  Column(
           children: [
 
             Expanded(
               child: StreamBuilder(
-               stream:  null,
+               stream: Apis.getAllMessage(),
                 builder: (context, snapshot) {
 
                   switch(snapshot.connectionState){
                   // if dats is loading
                     case ConnectionState.waiting:
                     case ConnectionState.none:
-                      //return Center(child: CircularProgressIndicator(),);
+                      return Center(child: CircularProgressIndicator(),);
                   // if some or all data is  loaded then show
                     case ConnectionState.active:
                     case ConnectionState.done:
                       //
-                      // final data  = snapshot.data?.docs;
+                       final data  = snapshot.data?.docs;
+                       log('Data : ${jsonEncode(data![0].data())}');
                       // _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
-
-                  final _list = [];
+                       _list.clear();
+                        _list.add(ChatModel(
+                          told: 'xyz',
+                          msg: 'hii',
+                          read: "",
+                          type: Type.text,
+                          fromid: Apis.user.uid,
+                          send: '12:05 AM'
+                        ));
+                        _list.add(ChatModel(
+                          told: Apis.user.uid,
+                          msg: 'Hello',
+                          read: '',
+                          type: Type.text,
+                          fromid: 'xyz',
+                          send: '12:02 AM'
+                        ));
                       if(_list.isNotEmpty)
                       {
                         return ListView.builder(
@@ -56,7 +83,7 @@ class _ChatScreenState extends State<ChatScreen> {
                             itemBuilder: (context,index){
                               // print("mansih ${list[index].image}");
 
-                              return Text("Massage: ${_list[index]}");
+                              return MessageCardState(chatModel: _list[index],);
 
 
                             });
@@ -179,3 +206,88 @@ class _ChatScreenState extends State<ChatScreen> {
   // bottom chat input field
 
 }
+
+class MessageCardState extends StatefulWidget {
+  final ChatModel chatModel;
+  const MessageCardState({super.key, required this.chatModel});
+
+  @override
+  State<MessageCardState> createState() => _MessageCardStateState();
+}
+
+class _MessageCardStateState extends State<MessageCardState> {
+  @override
+  Widget build(BuildContext context) {
+    return Apis.user.uid == widget.chatModel.fromid
+        ? _greenMessage()
+        : _blueMessage();
+  }
+  
+  Widget _blueMessage(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Flexible(
+          child: Container(
+            padding: EdgeInsets.all(mq.width * .04),
+            margin: EdgeInsets.symmetric(horizontal: mq.width * .04,vertical: mq.height * .01),
+            decoration: BoxDecoration(color: Color.fromARGB(255, 211, 245, 255),
+              border: Border.all(color: Colors.lightBlue),
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+                bottomRight: Radius.circular(30)
+              )
+            ),
+            child: Text('hi sjdfi',style: TextStyle(fontSize: 15,color: Colors.black87),),
+          ),
+        ),
+        Padding(
+          padding:  EdgeInsets.only(right:mq.width *.03),
+          child: Text('${widget.chatModel.send}',
+            style: TextStyle(fontSize: 13,color: Colors.black54),),
+        ),
+      ],
+    );
+  }
+  
+  Widget _greenMessage(){
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        Row(
+          children: [
+            // for adding some space
+            SizedBox(width: mq.width * .04,),
+            //doduble tick blue icon for message read
+            Icon(Icons.done_all_rounded,color: Colors.blue,),
+            // for adding some space
+            SizedBox(width: 2,),
+
+            //read time
+            Text('${widget.chatModel.read}'+ '12:00 AM',
+              style: TextStyle(fontSize: 13,color: Colors.black54),),
+          ],
+        ),
+
+        Flexible(
+          child: Container(
+            padding: EdgeInsets.all(mq.width * .04),
+            margin: EdgeInsets.symmetric(horizontal: mq.width * .04,vertical: mq.height * .01),
+            decoration: BoxDecoration(color: Color.fromARGB(255, 218, 255, 176),
+                border: Border.all(color: Colors.lightGreen),
+                borderRadius: BorderRadius.only(
+                    topLeft: Radius.circular(30),
+
+                    bottomRight: Radius.circular(30),
+                    bottomLeft: Radius.circular(30)
+                )
+            ),
+            child: Text('hi sjdfi',style: TextStyle(fontSize: 15,color: Colors.black87),),
+          ),
+        ),
+      ],
+    );
+  }
+}
+

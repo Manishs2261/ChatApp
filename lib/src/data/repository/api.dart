@@ -4,7 +4,8 @@
 import 'dart:developer';
 import 'dart:io';
 
-import 'package:chatapp/src/model/chat_model/chatmodel.dart';
+
+import 'package:chatapp/src/model/user_model/usermodel.dart';
 import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -38,7 +39,7 @@ class Apis{
 
     final time = DateTime.now().microsecondsSinceEpoch.toString();
 
-    final chatmodel = ChatModel(
+    final userModel = UserModel(
       id: user.uid,
       name: user.displayName.toString(),
       email: user.email,
@@ -50,7 +51,7 @@ class Apis{
       pushToken: ''
     );
 
-    return await firestore.collection('users').doc(user.uid).set(chatmodel.toJson());
+    return await firestore.collection('users').doc(user.uid).set(userModel.toJson());
   }
 
   // for getting all user from firestore database
@@ -58,14 +59,14 @@ class Apis{
     return firestore.collection('users').where('id',isNotEqualTo: user.uid).snapshots();
   }
 
-static late ChatModel me;
+static late UserModel me;
 
   //for store self information
   static Future<void> getSelfINfo() async{
      await firestore.collection('users').doc(user.uid).get().then((value) async {
 
        if(value.exists){
-         me = ChatModel.fromJson(value.data()!);
+         me = UserModel.fromJson(value.data()!);
          log('my data :${value.data()}');
 
        }else{
@@ -107,6 +108,13 @@ static late ChatModel me;
           'image': me.image
         });
 
+  }
+
+  // chat screen related apis
+  // for getting all messages of a specific conversation from firestore database
+
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessage(){
+    return firestore.collection('messages').snapshots();
   }
 
 

@@ -5,7 +5,7 @@ import 'dart:io';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
-import 'package:chatapp/src/model/chat_model/chatmodel.dart';
+
 import 'package:chatapp/src/utils/utils/utils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
