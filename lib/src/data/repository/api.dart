@@ -119,10 +119,12 @@ static late UserModel me;
   // for getting all messages of a specific conversation from firestore database
 
   static Stream<QuerySnapshot<Map<String, dynamic>>> getAllMessage(UserModel userModel){
-    return firestore.collection('chats/${getConversationID(userModel.id)}/messages/').snapshots();
+    return firestore.collection('chats/${getConversationID(userModel.id)}/messages/')
+        .orderBy('send',descending: true)
+        .snapshots();
   }
   //for sending message
-  static Future<void>sendingMessage(UserModel userModel,String msg)async{
+  static Future<void>sendingMessage(UserModel userModel,String msg,Type type)async{
     //message sending time (also used as id)
     final time = DateTime.now().microsecondsSinceEpoch.toString();
 
@@ -131,7 +133,7 @@ static late UserModel me;
       told: userModel.id,
       msg: msg,
       read: '',
-      type: Type.text,
+      type: type,
       fromid: user.uid,
       send: time,
     );
@@ -157,6 +159,24 @@ static late UserModel me;
   }
 
 
+  // send chat image
+  static Future<void> sendChatImage(UserModel userModel,File file)async{
+    // getting image file extension
+    final ext  = file.path.split('.').last;
+
+    // storage file ref with path
+    final ref = storage.ref().child('images/${getConversationID(userModel.id)}/${DateTime.now().millisecondsSinceEpoch}.$ext');
+
+    // uploading image
+    await ref.putFile(file, SettableMetadata(contentType: 'image/$ext')).then((p0) {
+      log('Data Transferred :${p0.bytesTransferred / 1000} kb');
+    });
+
+    // updating image in firestore database
+    final imageUrl = await ref.getDownloadURL();
+    await sendingMessage(userModel,imageUrl,Type.image);
+
+  }
 
 
 

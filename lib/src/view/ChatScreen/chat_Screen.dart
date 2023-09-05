@@ -11,6 +11,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
 import 'package:get/get_navigation/get_navigation.dart';
+import 'package:image_picker/image_picker.dart';
 
 import '../../../main.dart';
 import '../../model/chat_model/chatmodel.dart';
@@ -37,6 +38,7 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // for storing value of showing or hiding emoji
   bool _showEmoji = false;
+  bool _isUploading = false;
 
   @override
   Widget build(BuildContext context) {
@@ -71,7 +73,6 @@ class _ChatScreenState extends State<ChatScreen> {
 
                 Expanded(
                   child: StreamBuilder(
-
                    stream: Apis.getAllMessage(user),
                     builder: (context, snapshot) {
 
@@ -92,6 +93,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           if(_list.isNotEmpty)
                           {
                             return ListView.builder(
+                                reverse: true,
                                 itemCount: _list.length,
                                 padding: EdgeInsets.only(top: mq.height * .01),
                                 physics: BouncingScrollPhysics(),
@@ -111,6 +113,17 @@ class _ChatScreenState extends State<ChatScreen> {
                     },
                   ),
                 ),
+
+                //progress indecatoir for showing uploading
+                if(_isUploading)
+                Align(
+                  alignment: Alignment.centerRight,
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(vertical: 8,horizontal: 20),
+                    child: CircularProgressIndicator(strokeWidth: 2,),
+                  ),
+                ),
+
 
                 // bottom type field code
                 Padding(
@@ -151,11 +164,45 @@ class _ChatScreenState extends State<ChatScreen> {
                               )),
 
                               // pick image from gallery button
-                              IconButton(onPressed: (){},
+                              IconButton(onPressed: () async {
+
+                                final ImagePicker picker = ImagePicker();
+
+                                //picking multiple images
+                                final List<XFile> images = await picker.pickMultiImage(imageQuality: 70);
+
+                                for(var i in images){
+                                  setState(() {
+                                    _isUploading = true;
+                                  });
+                                  log('Image path: ${i.path}');
+                                  await Apis.sendChatImage(user, File(i.path));
+                                  setState(() {
+                                    _isUploading = false;
+                                  });
+                                }
+                              },
                                   icon: Icon(Icons.photo,color: Colors.blueAccent,)),
 
                               // take image from camera button
-                              IconButton(onPressed: (){},
+                              IconButton(onPressed: () async {
+
+                                final ImagePicker picker = ImagePicker();
+
+                                //pick an image
+                                final XFile? image = await picker.pickImage(source: ImageSource.camera,imageQuality: 70);
+                                if(image != null)
+                                {
+                                  setState(() {
+                                    _isUploading = true;
+                                  });
+                                  log('Image path: ${image.path}');
+                                  await Apis.sendChatImage(user, File(image.path));
+                                  setState(() {
+                                    _isUploading = false;
+                                  });
+                                }
+                              },
                                   icon: Icon(Icons.camera_alt,color: Colors.blueAccent,)),
                               SizedBox(width: mq.width * .02,),
                             ],
@@ -164,7 +211,7 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                       MaterialButton(onPressed: (){
                         if(_textContrroller.text.isNotEmpty){
-                          Apis.sendingMessage(user, _textContrroller.text);
+                          Apis.sendingMessage(user, _textContrroller.text,Type.text);
                           _textContrroller.text = '';
                         }
                       },
@@ -283,7 +330,7 @@ class _MessageCardStateState extends State<MessageCardState> {
       children: [
         Flexible(
           child: Container(
-            padding: EdgeInsets.all(mq.width * .04),
+            padding: EdgeInsets.all(widget.chatModel.type == Type.image ? mq.width * .0: mq.width * .04),
             margin: EdgeInsets.symmetric(horizontal: mq.width * .04,vertical: mq.height * .01),
             decoration: BoxDecoration(color: Color.fromARGB(255, 211, 245, 255),
               border: Border.all(color: Colors.lightBlue),
@@ -293,9 +340,25 @@ class _MessageCardStateState extends State<MessageCardState> {
                 bottomRight: Radius.circular(30)
               )
             ),
-            child: Text('${widget.chatModel.msg}',style: TextStyle(fontSize: 15,color: Colors.black87),),
-          ),
-        ),
+
+            child: widget.chatModel.type == Type.text ?
+                      Text('${widget.chatModel.msg}',style: TextStyle(fontSize: 15,color: Colors.black87),)
+                          :
+                      //show image
+                      ClipRRect(
+                      borderRadius: BorderRadius.circular(15),
+                      child: CachedNetworkImage(
+                      imageUrl:'${widget.chatModel.msg}',
+                       placeholder: (context, url) => Padding(
+                         padding: const EdgeInsets.all(8.0),
+                         child: CircularProgressIndicator(strokeWidth: 2,),
+                       ),
+                      errorWidget: (context, url, error) =>
+                      Icon(Icons.image,size: 70,)
+                      ),
+                      ),
+                            ),
+                          ),
         Padding(
           padding:  EdgeInsets.only(right:mq.width *.03),
           child: Text('${MyDataUtils.getFormattedTiime(context: context, time: widget.chatModel.send.toString())}',
@@ -327,7 +390,7 @@ class _MessageCardStateState extends State<MessageCardState> {
 
         Flexible(
           child: Container(
-            padding: EdgeInsets.all(mq.width * .04),
+            padding: EdgeInsets.all(widget.chatModel.type == Type.image ? mq.width * .0: mq.width * .04),
             margin: EdgeInsets.symmetric(horizontal: mq.width * .04,vertical: mq.height * .01),
             decoration: BoxDecoration(color: Color.fromARGB(255, 218, 255, 176),
                 border: Border.all(color: Colors.lightGreen),
@@ -338,7 +401,25 @@ class _MessageCardStateState extends State<MessageCardState> {
                     bottomLeft: Radius.circular(30)
                 )
             ),
-            child: Text('${widget.chatModel.msg}',style: TextStyle(fontSize: 15,color: Colors.black87),),
+
+            //show text
+            child: widget.chatModel.type == Type.text ?
+            Text('${widget.chatModel.msg}',style: TextStyle(fontSize: 15,color: Colors.black87),)
+                :
+                //show image
+            ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: CachedNetworkImage(
+                imageUrl:'${widget.chatModel.msg}',
+                 placeholder: (context, url) => Padding(
+                   padding: const EdgeInsets.all(8.0),
+                   child: CircularProgressIndicator(strokeWidth: 2,),
+                 ),
+                errorWidget: (context, url, error) =>
+                    Icon(Icons.image,size: 70,)
+              ),
+            ),
+
           ),
         ),
       ],

@@ -225,7 +225,13 @@ class _CahtUserCardState extends State<CahtUserCard> {
 
 
               title: Text("${widget.chat.name}"),
-              subtitle: Text("${_chatModel?.msg}",maxLines: 1,),
+              subtitle: Text(
+                _chatModel!= null
+                ? _chatModel!.type == Type.image
+                         ? 'image'
+                        : _chatModel!.msg.toString()
+                    : widget.chat.about.toString(),
+                     maxLines: 1,),
               // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
 
 
