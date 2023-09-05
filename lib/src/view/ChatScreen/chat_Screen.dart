@@ -1,9 +1,12 @@
 import 'dart:convert';
 import 'dart:developer';
+import 'dart:io';
+
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
 import 'package:chatapp/src/utils/date_and_time/dateAndtime.dart';
+import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -11,6 +14,7 @@ import 'package:get/get_navigation/get_navigation.dart';
 
 import '../../../main.dart';
 import '../../model/chat_model/chatmodel.dart';
+import 'package:flutter/foundation.dart' as foundation;
 
 class ChatScreen extends StatefulWidget {
   const ChatScreen({super.key});
@@ -30,125 +34,172 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // for storing all messages
   List<ChatModel>_list = [];
+
+  // for storing value of showing or hiding emoji
+  bool _showEmoji = false;
+
   @override
   Widget build(BuildContext context) {
   print("dtaa user ${user}");
 
-    return SafeArea(
-      child: Scaffold(
-        appBar: AppBar(
-          automaticallyImplyLeading: false,
-          flexibleSpace: _appBar() ,
+    return GestureDetector(
+      onTap:()=> FocusScope.of(context).unfocus(),
+      child: SafeArea(
+        child: WillPopScope(
+          // if search is on & back button is pressed then close search
+          // or else simple close current scren on back button click
+          onWillPop: (){
+            if(_showEmoji){
+              setState(() {
+                _showEmoji = !_showEmoji;
+              });
+              return Future.value(false);
+            }else{
+              return Future.value(true);
+            }
+          },
 
-        ),
-        backgroundColor:  Color.fromARGB(255, 234, 248, 255),
-        body:  Column(
-          children: [
+          child: Scaffold(
+            appBar: AppBar(
+              automaticallyImplyLeading: false,
+              flexibleSpace: _appBar() ,
 
-            Expanded(
-              child: StreamBuilder(
+            ),
+            backgroundColor:  Color.fromARGB(255, 234, 248, 255),
+            body:  Column(
+              children: [
 
-               stream: Apis.getAllMessage(user),
-                builder: (context, snapshot) {
+                Expanded(
+                  child: StreamBuilder(
 
-                  switch(snapshot.connectionState){
-                  // if dats is loading
-                    case ConnectionState.waiting:
-                    case ConnectionState.none:
-                      return SizedBox();
-                  // if some or all data is  loaded then show
-                    case ConnectionState.active:
-                    case ConnectionState.done:
-                      //
-                        final data  = snapshot.data?.docs;
+                   stream: Apis.getAllMessage(user),
+                    builder: (context, snapshot) {
 
-                      _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
+                      switch(snapshot.connectionState){
+                      // if dats is loading
+                        case ConnectionState.waiting:
+                        case ConnectionState.none:
+                          return SizedBox();
+                      // if some or all data is  loaded then show
+                        case ConnectionState.active:
+                        case ConnectionState.done:
+                          //
+                            final data  = snapshot.data?.docs;
 
-
-                      if(_list.isNotEmpty)
-                      {
-                        return ListView.builder(
-                            itemCount: _list.length,
-                            padding: EdgeInsets.only(top: mq.height * .01),
-                            physics: BouncingScrollPhysics(),
-                            itemBuilder: (context,index){
-                              // print("mansih ${list[index].image}");
-
-                              return MessageCardState(chatModel: _list[index],);
+                          _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
 
 
-                            });
-                      }else
-                      {
-                        return Center(child: Text("say hi 👋",style: TextStyle(fontSize: 20),),);
+                          if(_list.isNotEmpty)
+                          {
+                            return ListView.builder(
+                                itemCount: _list.length,
+                                padding: EdgeInsets.only(top: mq.height * .01),
+                                physics: BouncingScrollPhysics(),
+                                itemBuilder: (context,index){
+                                  // print("mansih ${list[index].image}");
+
+                                  return MessageCardState(chatModel: _list[index],);
+
+
+                                });
+                          }else
+                          {
+                            return Center(child: Text("say hi 👋",style: TextStyle(fontSize: 20),),);
+                          }
                       }
 
-                  }
-
-
-
-                },
-              ),
-            ),
-
-            // bottom type field code
-            Padding(
-              padding:  EdgeInsets.symmetric(vertical: mq.height * .01,horizontal: mq.width * .025),
-              child: Row(
-                children: [
-
-
-                  Expanded(
-                    child: Card(
-                      elevation: 3,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                      child: Row(
-                        children: [
-                          // emoji button
-                          IconButton(onPressed: (){},
-                              icon: Icon(Icons.emoji_emotions,color: Colors.blueAccent,)),
-
-                          Expanded(child: TextField(
-                            controller: _textContrroller,
-                            keyboardType: TextInputType.multiline,
-                            maxLines: null,
-                            decoration: InputDecoration(
-                              hintText: 'Message...',
-                              helperStyle: TextStyle(color: Colors.blueAccent),
-                              border: InputBorder.none
-                            ),
-                          )),
-
-                          // pick image from gallery button
-                          IconButton(onPressed: (){},
-                              icon: Icon(Icons.photo,color: Colors.blueAccent,)),
-
-                          // take image from camera button
-                          IconButton(onPressed: (){},
-                              icon: Icon(Icons.camera_alt,color: Colors.blueAccent,)),
-                          SizedBox(width: mq.width * .02,),
-                        ],
-                      ),
-                    ),
+                    },
                   ),
-                  MaterialButton(onPressed: (){
-                    if(_textContrroller.text.isNotEmpty){
-                      Apis.sendingMessage(user, _textContrroller.text);
-                      _textContrroller.text = '';
-                    }
-                  },
-                    minWidth: 0,
-                  padding: EdgeInsets.only(top: 10,bottom: 10,right: 5,left: 10),
-                  shape: CircleBorder(),
-                  color: Colors.green,
-                  child: Icon(Icons.send,color: Colors.white,size: 28,),)
-                ],
-              ),
-            )
-          ],
-        ),
-      ),
+                ),
 
+                // bottom type field code
+                Padding(
+                  padding:  EdgeInsets.symmetric(vertical: mq.height * .01,horizontal: mq.width * .025),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Card(
+                          elevation: 3,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                          child: Row(
+                            children: [
+                              // emoji button
+                              IconButton(onPressed: (){
+
+                                setState(() {
+                                  FocusScope.of(context).unfocus();
+                                  _showEmoji = !_showEmoji;
+                                });
+                              },
+                                  icon: Icon(Icons.emoji_emotions,color: Colors.blueAccent,)),
+
+                              Expanded(child: TextField(
+                                controller: _textContrroller,
+                                keyboardType: TextInputType.multiline,
+                                maxLines: null,
+                                onTap: (){
+                                  if(_showEmoji)
+                                  setState(() {
+                                    _showEmoji = !_showEmoji;
+                                  });
+                                },
+                                decoration: InputDecoration(
+                                  hintText: 'Message...',
+                                  helperStyle: TextStyle(color: Colors.blueAccent),
+                                  border: InputBorder.none
+                                ),
+                              )),
+
+                              // pick image from gallery button
+                              IconButton(onPressed: (){},
+                                  icon: Icon(Icons.photo,color: Colors.blueAccent,)),
+
+                              // take image from camera button
+                              IconButton(onPressed: (){},
+                                  icon: Icon(Icons.camera_alt,color: Colors.blueAccent,)),
+                              SizedBox(width: mq.width * .02,),
+                            ],
+                          ),
+                        ),
+                      ),
+                      MaterialButton(onPressed: (){
+                        if(_textContrroller.text.isNotEmpty){
+                          Apis.sendingMessage(user, _textContrroller.text);
+                          _textContrroller.text = '';
+                        }
+                      },
+                        minWidth: 0,
+                      padding: EdgeInsets.only(top: 10,bottom: 10,right: 5,left: 10),
+                      shape: CircleBorder(),
+                      color: Colors.green,
+                      child: Icon(Icons.send,color: Colors.white,size: 28,),)
+                    ],
+                  ),
+                ),
+
+
+      // show emojis on keyboard emoji button click & vice versa
+       if(_showEmoji)
+      SizedBox(
+          height: mq.height * .35,
+          child: EmojiPicker(
+
+          textEditingController: _textContrroller, // pass here the same [TextEditingController] that is connected to your input field, usually a [TextFormField]
+          config: Config(
+          columns: 7,
+          bgColor: Color.fromARGB(255, 234, 248, 255),
+          emojiSizeMax: 32 * (Platform.isIOS ? 1.30 : 1.0), // Issue: https://github.com/flutter/flutter/issues/28894
+
+          ),
+          ),
+      )
+
+              ],
+            ),
+          ),
+        ),
+
+      ),
     );
   }
 

@@ -56,6 +56,9 @@ dependencies:
   image_picker: ^1.0.4
   #for accessing firebase storege (for uploading files)
   firebase_storage: ^11.2.6
+  #for showing Emojis
+  emoji_picker_flutter: ^1.6.1
+
 
 
 
