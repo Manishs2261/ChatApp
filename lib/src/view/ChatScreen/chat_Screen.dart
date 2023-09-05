@@ -3,6 +3,7 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
+import 'package:chatapp/src/utils/date_and_time/dateAndtime.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get_core/src/get_main.dart';
@@ -22,12 +23,16 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // for get data form Home screen 
   var user =Get.arguments;
-  
+
+  // for handling message text changes
+  final TextEditingController _textContrroller = TextEditingController();
+
+
   // for storing all messages
   List<ChatModel>_list = [];
   @override
   Widget build(BuildContext context) {
-
+  print("dtaa user ${user}");
 
     return SafeArea(
       child: Scaffold(
@@ -42,38 +47,24 @@ class _ChatScreenState extends State<ChatScreen> {
 
             Expanded(
               child: StreamBuilder(
-               stream: Apis.getAllMessage(),
+
+               stream: Apis.getAllMessage(user),
                 builder: (context, snapshot) {
 
                   switch(snapshot.connectionState){
                   // if dats is loading
                     case ConnectionState.waiting:
                     case ConnectionState.none:
-                      return Center(child: CircularProgressIndicator(),);
+                      return SizedBox();
                   // if some or all data is  loaded then show
                     case ConnectionState.active:
                     case ConnectionState.done:
                       //
-                       final data  = snapshot.data?.docs;
-                       log('Data : ${jsonEncode(data![0].data())}');
-                      // _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
-                       _list.clear();
-                        _list.add(ChatModel(
-                          told: 'xyz',
-                          msg: 'hii',
-                          read: "",
-                          type: Type.text,
-                          fromid: Apis.user.uid,
-                          send: '12:05 AM'
-                        ));
-                        _list.add(ChatModel(
-                          told: Apis.user.uid,
-                          msg: 'Hello',
-                          read: '',
-                          type: Type.text,
-                          fromid: 'xyz',
-                          send: '12:02 AM'
-                        ));
+                        final data  = snapshot.data?.docs;
+
+                      _list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
+
+
                       if(_list.isNotEmpty)
                       {
                         return ListView.builder(
@@ -118,6 +109,7 @@ class _ChatScreenState extends State<ChatScreen> {
                               icon: Icon(Icons.emoji_emotions,color: Colors.blueAccent,)),
 
                           Expanded(child: TextField(
+                            controller: _textContrroller,
                             keyboardType: TextInputType.multiline,
                             maxLines: null,
                             decoration: InputDecoration(
@@ -139,7 +131,12 @@ class _ChatScreenState extends State<ChatScreen> {
                       ),
                     ),
                   ),
-                  MaterialButton(onPressed: (){},
+                  MaterialButton(onPressed: (){
+                    if(_textContrroller.text.isNotEmpty){
+                      Apis.sendingMessage(user, _textContrroller.text);
+                      _textContrroller.text = '';
+                    }
+                  },
                     minWidth: 0,
                   padding: EdgeInsets.only(top: 10,bottom: 10,right: 5,left: 10),
                   shape: CircleBorder(),
@@ -224,6 +221,12 @@ class _MessageCardStateState extends State<MessageCardState> {
   }
   
   Widget _blueMessage(){
+
+    // update last read message if sender and receiver are different
+    if(widget.chatModel.read!.isEmpty)
+      {
+        Apis.updateMessageReadStatus(widget.chatModel);
+      }
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
@@ -239,12 +242,12 @@ class _MessageCardStateState extends State<MessageCardState> {
                 bottomRight: Radius.circular(30)
               )
             ),
-            child: Text('hi sjdfi',style: TextStyle(fontSize: 15,color: Colors.black87),),
+            child: Text('${widget.chatModel.msg}',style: TextStyle(fontSize: 15,color: Colors.black87),),
           ),
         ),
         Padding(
           padding:  EdgeInsets.only(right:mq.width *.03),
-          child: Text('${widget.chatModel.send}',
+          child: Text('${MyDataUtils.getFormattedTiime(context: context, time: widget.chatModel.send.toString())}',
             style: TextStyle(fontSize: 13,color: Colors.black54),),
         ),
       ],
@@ -260,12 +263,13 @@ class _MessageCardStateState extends State<MessageCardState> {
             // for adding some space
             SizedBox(width: mq.width * .04,),
             //doduble tick blue icon for message read
+
             Icon(Icons.done_all_rounded,color: Colors.blue,),
             // for adding some space
             SizedBox(width: 2,),
 
-            //read time
-            Text('${widget.chatModel.read}'+ '12:00 AM',
+            //sead time
+            Text(MyDataUtils.getFormattedTiime(context: context, time: widget.chatModel.send.toString()),
               style: TextStyle(fontSize: 13,color: Colors.black54),),
           ],
         ),
@@ -283,7 +287,7 @@ class _MessageCardStateState extends State<MessageCardState> {
                     bottomLeft: Radius.circular(30)
                 )
             ),
-            child: Text('hi sjdfi',style: TextStyle(fontSize: 15,color: Colors.black87),),
+            child: Text('${widget.chatModel.msg}',style: TextStyle(fontSize: 15,color: Colors.black87),),
           ),
         ),
       ],

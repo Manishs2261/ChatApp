@@ -5,7 +5,7 @@ class UserModel {
   String? createdAt;
   String? lastActive;
   bool? isOnline;
-  String? id;
+  var id;
   String? email;
   String? pushToken;
 

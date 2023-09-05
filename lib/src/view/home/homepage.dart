@@ -7,7 +7,9 @@ import 'dart:developer';
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
+import 'package:chatapp/src/model/chat_model/chatmodel.dart';
 import 'package:chatapp/src/res/routes/routes_name.dart';
+import 'package:chatapp/src/utils/date_and_time/dateAndtime.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -167,7 +169,7 @@ class _HomePageState extends State<HomePage> {
   }
 }
 
-class CahtUserCard extends StatelessWidget {
+class CahtUserCard extends StatefulWidget {
 
    final UserModel chat;
 
@@ -176,6 +178,14 @@ class CahtUserCard extends StatelessWidget {
     required this.chat,
   });
 
+  @override
+  State<CahtUserCard> createState() => _CahtUserCardState();
+}
+
+class _CahtUserCardState extends State<CahtUserCard> {
+
+  //last message info (if null --> o message)
+  ChatModel? _chatModel;
 
   @override
   Widget build(BuildContext context) {
@@ -186,37 +196,58 @@ class CahtUserCard extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
       child: InkWell(
         onTap: (){
-          Get.toNamed(RoutesName.chatScreen,arguments: chat);
+          Get.toNamed(RoutesName.chatScreen,arguments: widget.chat);
         },
-        child: ListTile(
+        child: StreamBuilder(
+          stream: Apis.getLastMessage(widget.chat),
+          builder: (context,snapshot){
 
-        // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
-          leading: ClipRRect(
-            borderRadius: BorderRadius.circular(mq.height * .3),
-            child: CachedNetworkImage(
-              width: mq.height * .055,
-              height: mq.height * .055,
+            final data  = snapshot.data?.docs;
+            final list = data?.map((e) => ChatModel.fromJson(e.data())).toList() ?? [];
+            if(list.isNotEmpty){
+              _chatModel = list[0];
+            }
+            return  ListTile(
 
-              imageUrl:'${chat.image}',
-             // placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) =>
-              CircleAvatar(child: Icon(CupertinoIcons.person),),
-            ),
-          ),
+              // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
+              leading: ClipRRect(
+                borderRadius: BorderRadius.circular(mq.height * .3),
+                child: CachedNetworkImage(
+                  width: mq.height * .055,
+                  height: mq.height * .055,
+
+                  imageUrl:'${widget.chat.image}',
+                  // placeholder: (context, url) => CircularProgressIndicator(),
+                  errorWidget: (context, url, error) =>
+                      CircleAvatar(child: Icon(CupertinoIcons.person),),
+                ),
+              ),
 
 
-          title: Text("${chat.name}"),
-          subtitle: Text("${chat.about}",maxLines: 1,),
-         // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
-          trailing: Container(
-            width: 15,
-            height: 15,
-            decoration: BoxDecoration(
-              color: Colors.greenAccent.shade400,
-              borderRadius: BorderRadius.circular(10)
-            ),
-          ),
-        ),
+              title: Text("${widget.chat.name}"),
+              subtitle: Text("${_chatModel?.msg}",maxLines: 1,),
+              // trailing: Text("12:00 pm",style: TextStyle(color: Colors.black54),),
+
+
+                // last message time
+              trailing: _chatModel == null
+              ? null  // show nothing when no messages is send
+              : _chatModel!.read!.isEmpty && _chatModel!.fromid != Apis.user.uid
+              ?
+              // show for unread message
+              Container(
+                width: 15,
+                height: 15,
+                decoration: BoxDecoration(
+                    color: Colors.greenAccent.shade400,
+                    borderRadius: BorderRadius.circular(10)
+                ),
+              )
+                  : Text(MyDataUtils.getLastMessageTime(context: context, time: _chatModel!.send.toString()),
+                style: TextStyle(color: Colors.black54),)
+            );
+          },
+        )
       ),
     );
   }
