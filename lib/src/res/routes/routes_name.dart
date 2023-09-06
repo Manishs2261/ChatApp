@@ -5,4 +5,5 @@ static const String splashscreen = '/';
   static const String homepage = '/homepage';
   static const String profileScreen = '/profilescreen';
   static const String chatScreen = '/chatscreen';
+  static const String viewprofilescreen = '/viewprofilescreen';
 }

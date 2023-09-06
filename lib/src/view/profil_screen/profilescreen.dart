@@ -7,13 +7,17 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
 
 import 'package:chatapp/src/utils/utils/utils.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:get/get_core/src/get_main.dart';
+import 'package:google_sign_in/google_sign_in.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../main.dart';
+import '../../res/routes/routes_name.dart';
 
 class ProfileScreen extends StatefulWidget {
 
@@ -43,7 +47,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
           padding: const EdgeInsets.only(bottom: 15),
           child: FloatingActionButton.extended(
               onPressed: () async {
-                await Apis.signOut(context);
+
+                // for showing prograss dialog
+                Utils.showProgressBar(context);
+
+                 await Apis.updateActiveStatus(false);
+                // await Apis.signOut(context);
+
+                //sing out from app
+                 await  FirebaseAuth.instance.signOut().then((value) async {
+                   await GoogleSignIn().signOut().then((value){
+                     //for hiding prograss dialog
+                     Navigator.pop(context);
+
+                     Apis.auth = FirebaseAuth.instance;
+
+                     //for moving to home screen
+                     Navigator.pop(context);
+                     //replacing home screen with login screen
+                     Get.toNamed(RoutesName.loginScreen);
+                   });
+                 });
+
 
               },
               icon: Icon(Icons.logout),

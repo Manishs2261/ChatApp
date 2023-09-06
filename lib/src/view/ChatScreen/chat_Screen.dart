@@ -1,10 +1,13 @@
 import 'dart:convert';
 import 'dart:developer';
+
 import 'dart:io';
 
 
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
+import 'package:chatapp/src/model/user_model/usermodel.dart';
+import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:chatapp/src/utils/date_and_time/dateAndtime.dart';
 import 'package:emoji_picker_flutter/emoji_picker_flutter.dart';
 import 'package:flutter/cupertino.dart';
@@ -253,48 +256,67 @@ class _ChatScreenState extends State<ChatScreen> {
   //App bar widget
   Widget _appBar(){
     return InkWell(
-      onTap: (){},
-      child: Row(
-        children: [
-          //back button
-          IconButton(
-              onPressed: (){
-                Get.back();
-              },
-              icon:Icon(Icons.arrow_back,color: Colors.black54,)),
-          //user profile picture
-          ClipRRect(
-            borderRadius: BorderRadius.circular(mq.height * .3),
-            child: CachedNetworkImage(
-              width: mq.height * .05,
-              height: mq.height * .05,
+      onTap: (){
+        Get.toNamed(RoutesName.viewprofilescreen,arguments: user);
+      },
+      child: StreamBuilder(
+        stream: Apis.getUserInfo(user),
+        builder: (context,snapshot){
 
-              imageUrl:'${user.image}',
-              // placeholder: (context, url) => CircularProgressIndicator(),
-              errorWidget: (context, url, error) =>
-                  CircleAvatar(child: Icon(CupertinoIcons.person),),
-            ),
-          ),
-          SizedBox(width: 10,),
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
+          final data = snapshot.data?.docs;
+          final list = data?.map((e) => UserModel.fromJson(e.data())).toList() ?? [];
+
+          return  Row(
             children: [
-              Text(user.name,style: TextStyle(
-                fontSize: 15,
-                color: Colors.black87,
-                fontWeight: FontWeight.w500
-              ),),
-              SizedBox(height: 3,),
-              Text('Last seen not available',style: TextStyle(
-                  fontSize: 13,
-                  color: Colors.black54,
-                  fontWeight: FontWeight.w500
-              ),)
+              //back button
+              IconButton(
+                  onPressed: (){
+                    Get.back();
+                  },
+                  icon:Icon(Icons.arrow_back,color: Colors.black54,)),
+              //user profile picture
+              ClipRRect(
+                borderRadius: BorderRadius.circular(mq.height * .3),
+                child: CachedNetworkImage(
+                  width: mq.height * .05,
+                  height: mq.height * .05,
+
+                  imageUrl: list.isNotEmpty ? '${list[0].image}' : '${user.image}',
+                  // placeholder: (context, url) => CircularProgressIndicator(),
+                  errorWidget: (context, url, error) =>
+                      CircleAvatar(child: Icon(CupertinoIcons.person),),
+                ),
+              ),
+              SizedBox(width: 10,),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(list.isNotEmpty ? list[0].name : user.name,style: TextStyle(
+                      fontSize: 15,
+                      color: Colors.black87,
+                      fontWeight: FontWeight.w500
+                  ),),
+                  // for adding some space
+                  SizedBox(height: 3,),
+                  // last seen time of user
+                  Text(
+                       list.isNotEmpty
+                    ? list[0].isOnline!
+                           ?'Online'
+                           : MyDataUtils.getLastActiveTime(context: context, lastActive: list[0].lastActive.toString())
+                           : MyDataUtils.getLastActiveTime(context: context, lastActive: user.lastActive)
+                         ,style: TextStyle(
+                      fontSize: 13,
+                      color: Colors.black54,
+                      fontWeight: FontWeight.w500
+                  ),)
+                ],
+              )
             ],
-          )
-        ],
-      ),
+          );
+        },
+      )
     );
   }
 

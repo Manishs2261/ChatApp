@@ -10,6 +10,7 @@ import 'package:chatapp/src/model/user_model/usermodel.dart';
 import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:get/get.dart';
@@ -178,18 +179,20 @@ static late UserModel me;
 
   }
 
-
-
-
-  // for sign out
-  static signOut(BuildContext context)async{
-    //sign out from app
-    await  FirebaseAuth.instance.signOut().then((value) async {
-      await GoogleSignIn().signOut().then((value){
-        // for hiding progress dialog
-        Get.toNamed(RoutesName.loginScreen);
-      });
-    });
-
+  // for getting specific user info
+  static Stream<QuerySnapshot<Map<String, dynamic>>> getUserInfo(UserModel userModel){
+    return firestore.collection('users').where('id',isEqualTo: userModel.id).snapshots();
   }
+
+  // update online or last active status of user
+  static Future<void> updateActiveStatus(bool isOnline)async{
+    firestore.collection('users').doc(user.uid).update({
+      'is_online':isOnline,
+      'last_active':DateTime.now().millisecondsSinceEpoch.toString()
+    });
+  }
+
+
+
+
 }

@@ -10,10 +10,12 @@ import 'package:chatapp/src/data/repository/api.dart';
 import 'package:chatapp/src/model/chat_model/chatmodel.dart';
 import 'package:chatapp/src/res/routes/routes_name.dart';
 import 'package:chatapp/src/utils/date_and_time/dateAndtime.dart';
+import 'package:chatapp/src/view/home/widget/image_dialog.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -43,6 +45,22 @@ class _HomePageState extends State<HomePage> {
     // TODO: implement initState
     super.initState();
     Apis.getSelfINfo();
+    Apis.getSelfINfo();
+    // for setting user statud to active
+    Apis.updateActiveStatus(true);
+    // for updating user active status accoding to lifecycle events
+    //resumw -- active or online
+    // pause - inactive or offline
+    SystemChannels.lifecycle.setMessageHandler((message){
+      log('Message :$message');
+
+      if(Apis.auth.currentUser != null){
+        if(message.toString().contains('resume')) Apis.updateActiveStatus(true);
+        if(message.toString().contains('pause')) Apis.updateActiveStatus(false);
+      }
+
+      return Future.value(message);
+    });
   }
 
   @override
@@ -210,16 +228,21 @@ class _CahtUserCardState extends State<CahtUserCard> {
             return  ListTile(
 
               // leading: CircleAvatar(child: Image.network(list[index].image.toString()),),
-              leading: ClipRRect(
-                borderRadius: BorderRadius.circular(mq.height * .3),
-                child: CachedNetworkImage(
-                  width: mq.height * .055,
-                  height: mq.height * .055,
+              leading: InkWell(
+                onTap: (){
+                  showDialog(context: context, builder: (_)=>ImageDialog(userModel: widget.chat));
+                },
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(mq.height * .3),
+                  child: CachedNetworkImage(
+                    width: mq.height * .055,
+                    height: mq.height * .055,
 
-                  imageUrl:'${widget.chat.image}',
-                  // placeholder: (context, url) => CircularProgressIndicator(),
-                  errorWidget: (context, url, error) =>
-                      CircleAvatar(child: Icon(CupertinoIcons.person),),
+                    imageUrl:'${widget.chat.image}',
+                    // placeholder: (context, url) => CircularProgressIndicator(),
+                    errorWidget: (context, url, error) =>
+                        CircleAvatar(child: Icon(CupertinoIcons.person),),
+                  ),
                 ),
               ),
 
