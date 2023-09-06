@@ -6,6 +6,8 @@ import 'package:chatapp/src/view/splashScreen/splashscren.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_notification_channel/flutter_notification_channel.dart';
+import 'package:flutter_notification_channel/notification_importance.dart';
 import 'package:get/get_navigation/get_navigation.dart';
 import 'package:get/get.dart';
 
@@ -57,6 +59,15 @@ _initializerFirebase()async{
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
+
+  var result = await FlutterNotificationChannel.registerNotificationChannel(
+    description: 'Your channel description',
+    id: 'chats',
+    importance: NotificationImportance.IMPORTANCE_HIGH,
+    name: 'chat app for you',
+
+  );
+  print(result);
 
 }
 

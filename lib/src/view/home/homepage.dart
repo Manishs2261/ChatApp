@@ -46,8 +46,7 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     Apis.getSelfINfo();
     Apis.getSelfINfo();
-    // for setting user statud to active
-    Apis.updateActiveStatus(true);
+
     // for updating user active status accoding to lifecycle events
     //resumw -- active or online
     // pause - inactive or offline

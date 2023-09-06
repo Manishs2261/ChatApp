@@ -335,11 +335,18 @@ class MessageCardState extends StatefulWidget {
 class _MessageCardStateState extends State<MessageCardState> {
   @override
   Widget build(BuildContext context) {
-    return Apis.user.uid == widget.chatModel.fromid
-        ? _greenMessage()
-        : _blueMessage();
+    bool isMe = Apis.user.uid == widget.chatModel.fromid;
+    return InkWell(
+      onLongPress: (){
+        _showBottomSheet(isMe);
+      },
+      child: isMe    ? _greenMessage()
+                     : _blueMessage(),
+    );
+
   }
-  
+
+  // sender or another user message
   Widget _blueMessage(){
 
     // update last read message if sender and receiver are different
@@ -389,7 +396,8 @@ class _MessageCardStateState extends State<MessageCardState> {
       ],
     );
   }
-  
+
+  // our or user message
   Widget _greenMessage(){
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -447,5 +455,71 @@ class _MessageCardStateState extends State<MessageCardState> {
       ],
     );
   }
+
+  // bottom sheet for modifying message details
+  void _showBottomSheet(bool isMe){
+
+    showModalBottomSheet(context: context,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.only(
+          topRight: Radius.circular(20),
+          topLeft: Radius.circular(20)
+        )),
+        builder:(_){
+      return ListView(
+        shrinkWrap: true,
+        children: [
+
+          Container(
+            height: 4,
+            margin: EdgeInsets.symmetric(vertical: mq.height * .015,
+            horizontal: mq.width * .4),
+            decoration: BoxDecoration(color: Colors.grey,borderRadius: BorderRadius.circular(8)),),
+
+
+          widget.chatModel.type == Type.text
+          ?     OptionItem(Icon(Icons.copy_all_outlined,color: Colors.blue,size: 26,), 'Copy Text', () {})
+          :   OptionItem(Icon(Icons.save,color: Colors.blue,size: 26,), 'Save image', () {}),
+
+          if(widget.chatModel.type == Type.text && isMe)
+          OptionItem(Icon(Icons.edit,color: Colors.blue,size: 26,), 'Edit Message', () {}),
+          if(isMe)
+          OptionItem(Icon(Icons.delete,color: Colors.red,size: 26,), 'Delete Message', () {}),
+          OptionItem(Icon(Icons.remove_red_eye,color: Colors.blue,size: 26,), 'Sent At :', () {}),
+          OptionItem(Icon(Icons.remove_red_eye,color: Colors.red,size: 26,), 'Read At : ', () {}),
+
+
+        ],
+      );
+        });
+  }
 }
 
+class OptionItem extends StatelessWidget {
+
+  final Icon icon;
+  final String name;
+  final VoidCallback onTap;
+  const OptionItem(this.icon,this.name,this.onTap);
+
+  @override
+  Widget build(BuildContext context) {
+    return  InkWell(
+      onTap: () => onTap(),
+      child: Padding(
+        padding: EdgeInsets.only(left: mq.width * .05,
+        top: mq.height * .015,
+        bottom: mq.height * .025),
+        child: Row(
+          children: [
+            icon,
+            Flexible(child: Text('     ${name}',style: TextStyle(
+              fontSize: 15,
+              color: Colors.black54,
+              letterSpacing: .05,
+            ),))
+          ],
+        ),
+      ),
+    );
+  }
+}
