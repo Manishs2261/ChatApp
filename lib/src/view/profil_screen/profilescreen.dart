@@ -7,6 +7,9 @@ import 'package:cached_network_image/cached_network_image.dart';
 import 'package:chatapp/src/data/repository/api.dart';
 
 import 'package:chatapp/src/utils/utils/utils.dart';
+import 'package:chatapp/src/view/profil_screen/widget/AboutTextField.dart';
+import 'package:chatapp/src/view/profil_screen/widget/NameTextField.dart';
+import 'package:chatapp/src/view/profil_screen/widget/UpdateButton.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/cupertino.dart';
@@ -201,47 +204,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   SizedBox(height: mq.height * .03,),
                   Text('${list.email}',style:TextStyle(color: Colors.black54,fontSize: 16),),
                   SizedBox(height: mq.height * .03,),
-                  TextFormField(
-                    initialValue: list.name,
-                    onSaved: (value)=> Apis.me.name = value ?? ' ',
-                    validator: (vales)=> vales != null && vales.isNotEmpty ? null : 'Required Field',
-                    decoration: InputDecoration(
-                      prefixIcon: Icon(Icons.person),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      hintText: 'Ex. Ravi sahu',
-                      label: Text("Name")
-                    ),
-                  ),
+                  NameTextField(list: list),
                   SizedBox(height: mq.height * .02),
-                  TextFormField(
-                    initialValue: list.about,
-                    onSaved: (value)=> Apis.me.about = value ?? ' ',
-                    validator: (vales)=> vales != null && vales.isNotEmpty ? null : 'Required Field',
-                    decoration: InputDecoration(
-                        prefixIcon: Icon(Icons.person),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                        hintText: 'type your about',
-                        label: Text("About")
-                    ),
-                  ),
+                  AboutTextField(list: list),
                   SizedBox(height: mq.height * .05),
-                  ElevatedButton.icon(
-                    style: ElevatedButton.styleFrom(
-                      elevation: 5
-                    ),
-                      onPressed: (){
-                      if(_formkey.currentState!.validate()){
-                        _formkey.currentState!.save();
-                        Apis.updateUseInfo().then((value) {
-                          Get.snackbar('Update',"Profile update Successfullty");
-                        });
-                        log('inside validater');
-                      }
-                      },
-                      icon:Icon(Icons.update) ,
-                      label:  Text("Update"),
-
-                  )
+                  UpdateButton(formkey: _formkey)
                 ],
               ),
             ),
@@ -251,3 +218,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 }
+
+
+
+
+
+

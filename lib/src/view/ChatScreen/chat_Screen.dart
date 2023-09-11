@@ -212,17 +212,7 @@ class _ChatScreenState extends State<ChatScreen> {
                           ),
                         ),
                       ),
-                      MaterialButton(onPressed: (){
-                        if(_textContrroller.text.isNotEmpty){
-                          Apis.sendingMessage(user, _textContrroller.text,Type.text);
-                          _textContrroller.text = '';
-                        }
-                      },
-                        minWidth: 0,
-                      padding: EdgeInsets.only(top: 10,bottom: 10,right: 5,left: 10),
-                      shape: CircleBorder(),
-                      color: Colors.green,
-                      child: Icon(Icons.send,color: Colors.white,size: 28,),)
+                      SendMessage(textContrroller: _textContrroller, user: user)
                     ],
                   ),
                 ),
@@ -322,6 +312,32 @@ class _ChatScreenState extends State<ChatScreen> {
 
   // bottom chat input field
 
+}
+
+class SendMessage extends StatelessWidget {
+  const SendMessage({
+    super.key,
+    required TextEditingController textContrroller,
+    required this.user,
+  }) : _textContrroller = textContrroller;
+
+  final TextEditingController _textContrroller;
+  final  user;
+
+  @override
+  Widget build(BuildContext context) {
+    return MaterialButton(onPressed: (){
+      if(_textContrroller.text.isNotEmpty){
+        Apis.sendingMessage(user, _textContrroller.text,Type.text);
+        _textContrroller.text = '';
+      }
+    },
+      minWidth: 0,
+    padding: EdgeInsets.only(top: 10,bottom: 10,right: 5,left: 10),
+    shape: CircleBorder(),
+    color: Colors.green,
+    child: Icon(Icons.send,color: Colors.white,size: 28,),);
+  }
 }
 
 class MessageCardState extends StatefulWidget {
