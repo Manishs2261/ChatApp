@@ -1,7 +1,5 @@
 import 'package:chatapp/firebase_options.dart';
 import 'package:chatapp/src/res/routes/routes.dart';
-import 'package:chatapp/src/view/auth/login/login.dart';
-import 'package:chatapp/src/view/home/homepage.dart';
 import 'package:chatapp/src/view/splashScreen/splashscren.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
